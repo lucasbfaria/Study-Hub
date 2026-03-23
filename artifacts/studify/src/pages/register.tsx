@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useRegister, useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -14,7 +14,10 @@ export default function Register() {
   const queryClient = useQueryClient();
 
   const { data: me } = useGetMe({ query: { retry: false } });
-  if (me) setLocation("/");
+
+  useEffect(() => {
+    if (me) setLocation("/dashboard");
+  }, [me]);
 
   const registerMut = useRegister();
 
@@ -24,7 +27,7 @@ export default function Register() {
       onSuccess: () => {
         toast.success("Conta criada com sucesso!");
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-        setLocation("/");
+        setLocation("/dashboard");
       },
       onError: (err) => {
         toast.error(err.error?.error || "Erro ao criar conta.");

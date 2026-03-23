@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import NotFound from "@/pages/not-found";
 
+import Landing from "./pages/landing";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import Dashboard from "./pages/dashboard";
@@ -22,14 +23,15 @@ const queryClient = new QueryClient({
 function Router() {
   return (
     <Switch>
+      <Route path="/" component={Landing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
-      
-      <Route path="/" component={Dashboard} />
+
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/groups/:id" component={GroupPage} />
       <Route path="/profile" component={Profile} />
       <Route path="/invites" component={Invites} />
-      
+
       <Route component={NotFound} />
     </Switch>
   );

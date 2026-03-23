@@ -24,11 +24,13 @@ Studify is a study groups platform in Brazilian Portuguese with:
 - User registration & login (session-based, cookie auth)
 - Private study groups (invite-only)
 - Invite system: admins invite by email, users accept/reject
-- Study posts: subject, hours studied, optional description
+- Study posts: subject, hours studied, optional description, optional image proof (uploaded to server)
 - Weekly ranking by hours per group
 - Streak tracking (consecutive study days)
-- Dashboard: sidebar (groups) + center feed + right ranking panel
+- Dashboard: sidebar (groups) + center feed + right ranking panel (at `/dashboard`)
+- Public landing page at `/` (no auth required)
 - User profile page with stats
+- Image uploads: multer handles multipart/form-data, stores in `artifacts/api-server/uploads/`, served statically at `/api/uploads/*`
 
 ### Demo Accounts (seeded)
 - `ana@exemplo.com` / `senha123` (admin of "Maratona de Programação")
@@ -56,7 +58,7 @@ artifacts-monorepo/
 - `users` — id, name, email, passwordHash, streak, totalHours, lastStudyDate
 - `groups` — id, name, adminId
 - `group_members` — groupId, userId
-- `posts` — groupId, userId, subject, hours, description
+- `posts` — groupId, userId, subject, hours, description, imageUrl (nullable)
 - `invites` — groupId, invitedById, invitedUserId, status (pending/accepted/rejected)
 - `sessions` — sessionId, userId, expiresAt
 
@@ -81,14 +83,15 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 
 - Entry: `src/index.ts` — reads `PORT`, starts Express
 - App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, cookie-parser, session middleware, routes at `/api`
-- Routes: auth, groups, invites, users
+- Routes: auth, groups, invites, users, upload
+- Static file serving: `/api/uploads/*` served from `artifacts/api-server/uploads/`
 - `pnpm --filter @workspace/api-server run dev` — run the dev server
 
 ### `artifacts/studify` (`@workspace/studify`)
 
 React + Vite frontend for Studify.
 
-- Pages: login, register, dashboard, group, profile, invites
+- Pages: landing (public `/`), login, register, dashboard (`/dashboard`), group, profile, invites
 - Components: layout (sidebar), modal, shared UI primitives
 - Uses `@workspace/api-client-react` generated hooks
 - `pnpm --filter @workspace/studify run dev` — run dev server

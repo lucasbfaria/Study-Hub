@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useLogin, useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,8 +12,11 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
-  const { data: me } = useGetMe({ query: { retry: false } });
-  if (me) setLocation("/");
+  const { data: me, isLoading } = useGetMe({ query: { retry: false } });
+
+  useEffect(() => {
+    if (me) setLocation("/dashboard");
+  }, [me]);
 
   const loginMut = useLogin();
 
@@ -23,18 +26,20 @@ export default function Login() {
       onSuccess: () => {
         toast.success("Login realizado com sucesso!");
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-        setLocation("/");
+        setLocation("/dashboard");
       },
-      onError: (err) => {
-        toast.error(err.error?.error || "E-mail ou senha inválidos.");
+      onError: () => {
+        toast.error("E-mail ou senha inválidos.");
       }
     });
   };
 
+  if (isLoading) return null;
+
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
       <img src={`${import.meta.env.BASE_URL}images/auth-bg.png`} alt="Background" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" />
-      
+
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="w-full max-w-md z-10 px-4">
         <div className="flex flex-col items-center mb-8">
           <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="Studify" className="h-16 w-16 mb-4 rounded-2xl shadow-xl shadow-primary/20" />
@@ -56,12 +61,18 @@ export default function Login() {
               Entrar
             </Button>
           </form>
-          
+
           <div className="mt-8 text-center text-sm text-muted-foreground">
             Ainda não tem uma conta?{" "}
             <Link href="/register" className="font-semibold text-primary hover:underline">Registre-se agora</Link>
           </div>
         </Card>
+
+        <div className="mt-6 text-center">
+          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            ← Voltar para a página inicial
+          </Link>
+        </div>
       </motion.div>
     </div>
   );

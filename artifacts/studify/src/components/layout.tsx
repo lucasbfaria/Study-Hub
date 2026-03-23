@@ -60,9 +60,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col gap-1">
       <div className="px-3 py-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Menu</div>
       <Link
-        href="/"
+        href="/dashboard"
         onClick={() => setIsMobileMenuOpen(false)}
-        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${location === "/" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${location === "/dashboard" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
       >
         <BookOpen className="h-5 w-5" />
         Dashboard
@@ -108,7 +108,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex w-72 flex-col border-r border-border/50 bg-card/50 backdrop-blur-xl">
         <div className="flex h-20 items-center px-6">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="Studify" className="h-10 w-10 rounded-xl" />
             <span className="font-display text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Studify</span>
           </Link>

@@ -11,6 +11,7 @@ export const postsTable = pgTable("posts", {
   subject: text("subject").notNull(),
   hours: real("hours").notNull(),
   description: text("description"),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

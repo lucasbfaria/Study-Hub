@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useRoute } from "wouter";
 import { motion } from "framer-motion";
 import { 
@@ -8,12 +8,27 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Clock, Plus, Users, ShieldAlert, BookOpen, Crown, Send, Trophy } from "lucide-react";
+import { Clock, Plus, Users, BookOpen, Send, Trophy, ImageIcon, X } from "lucide-react";
 
 import { Layout } from "@/components/layout";
 import { Button, Card, Input, Textarea, Avatar, Badge, Spinner } from "@/components/ui";
 import { Modal } from "@/components/modal";
 import { timeAgo, formatDate, getInitials, cn } from "@/lib/utils";
+
+const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+async function uploadImage(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("image", file);
+  const res = await fetch(`${API_BASE}/api/upload`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Falha no upload da imagem");
+  const data = await res.json();
+  return data.url as string;
+}
 
 export default function GroupPage() {
   const [, params] = useRoute("/groups/:id");
@@ -29,6 +44,10 @@ export default function GroupPage() {
   const [postSubject, setPostSubject] = useState("");
   const [postHours, setPostHours] = useState("");
   const [postDesc, setPostDesc] = useState("");
+  const [postImageFile, setPostImageFile] = useState<File | null>(null);
+  const [postImagePreview, setPostImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -38,22 +57,54 @@ export default function GroupPage() {
 
   const isAdmin = group?.adminId === me?.id;
 
-  const handleCreatePost = (e: React.FormEvent) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPostImageFile(file);
+    setPostImagePreview(URL.createObjectURL(file));
+  };
+
+  const removeImage = () => {
+    setPostImageFile(null);
+    setPostImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const closePostModal = () => {
+    setIsPostModalOpen(false);
+    setPostSubject("");
+    setPostHours("");
+    setPostDesc("");
+    removeImage();
+  };
+
+  const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postSubject || !postHours) return;
-    
+
+    let imageUrl: string | null = null;
+    if (postImageFile) {
+      try {
+        setIsUploading(true);
+        imageUrl = await uploadImage(postImageFile);
+      } catch {
+        toast.error("Erro ao fazer upload da imagem.");
+        setIsUploading(false);
+        return;
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
     createPostMut.mutate({ 
       groupId, 
-      data: { subject: postSubject, hours: Number(postHours), description: postDesc || null }
+      data: { subject: postSubject, hours: Number(postHours), description: postDesc || null, imageUrl }
     }, {
       onSuccess: () => {
         toast.success("Sessão de estudo registrada!");
         queryClient.invalidateQueries({ queryKey: getListGroupPostsQueryKey(groupId) });
         queryClient.invalidateQueries({ queryKey: getGetGroupRankingQueryKey(groupId) });
-        setIsPostModalOpen(false);
-        setPostSubject("");
-        setPostHours("");
-        setPostDesc("");
+        closePostModal();
       },
       onError: (err) => toast.error(err.error?.error || "Erro ao registrar.")
     });
@@ -134,7 +185,16 @@ export default function GroupPage() {
                       </div>
                       <h3 className="text-lg font-bold font-display text-foreground mb-1">{post.subject}</h3>
                       {post.description && (
-                        <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{post.description}</p>
+                        <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap mb-3">{post.description}</p>
+                      )}
+                      {post.imageUrl && (
+                        <div className="mt-2 rounded-xl overflow-hidden border border-border/50 max-w-sm">
+                          <img
+                            src={`${API_BASE}${post.imageUrl}`}
+                            alt="Prova de estudo"
+                            className="w-full object-cover max-h-80"
+                          />
+                        </div>
                       )}
                     </div>
                   </Card>
@@ -189,7 +249,7 @@ export default function GroupPage() {
       </div>
 
       {/* Post Modal */}
-      <Modal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)} title="Registrar Estudo" description="O que você estudou hoje? Compartilhe com o grupo.">
+      <Modal isOpen={isPostModalOpen} onClose={closePostModal} title="Registrar Estudo" description="O que você estudou hoje? Compartilhe com o grupo.">
         <form onSubmit={handleCreatePost} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Matéria / Assunto</label>
@@ -203,9 +263,43 @@ export default function GroupPage() {
             <label className="block text-sm font-medium mb-1">Descrição (opcional)</label>
             <Textarea value={postDesc} onChange={e => setPostDesc(e.target.value)} placeholder="Resumo do que foi estudado..." />
           </div>
+
+          {/* Image upload */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Foto de prova (opcional)</label>
+            {postImagePreview ? (
+              <div className="relative rounded-xl overflow-hidden border border-border max-h-48">
+                <img src={postImagePreview} alt="Preview" className="w-full object-cover max-h-48" />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1 border border-border hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-6 text-sm text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+              >
+                <ImageIcon className="w-5 h-5" />
+                Clique para adicionar uma foto
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+          </div>
+
           <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="ghost" onClick={() => setIsPostModalOpen(false)}>Cancelar</Button>
-            <Button type="submit" isLoading={createPostMut.isPending}>Publicar</Button>
+            <Button type="button" variant="ghost" onClick={closePostModal}>Cancelar</Button>
+            <Button type="submit" isLoading={isUploading || createPostMut.isPending}>Publicar</Button>
           </div>
         </form>
       </Modal>

@@ -11,4 +11,6 @@ export interface CreatePostBody {
   hours: number;
   /** @nullable */
   description?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
 }

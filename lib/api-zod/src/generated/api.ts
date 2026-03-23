@@ -130,6 +130,7 @@ export const ListGroupPostsResponseItem = zod.object({
   subject: zod.string(),
   hours: zod.number(),
   description: zod.string().nullable(),
+  imageUrl: zod.string().nullable(),
   createdAt: zod.date(),
 });
 export const ListGroupPostsResponse = zod.array(ListGroupPostsResponseItem);
@@ -145,6 +146,7 @@ export const CreatePostBody = zod.object({
   subject: zod.string(),
   hours: zod.number(),
   description: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
 });
 
 /**

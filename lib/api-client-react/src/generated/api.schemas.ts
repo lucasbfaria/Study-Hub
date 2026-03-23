@@ -72,6 +72,8 @@ export interface Post {
   hours: number;
   /** @nullable */
   description: string | null;
+  /** @nullable */
+  imageUrl: string | null;
   createdAt: string;
 }
 
@@ -80,6 +82,12 @@ export interface CreatePostBody {
   hours: number;
   /** @nullable */
   description?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
+}
+
+export interface UploadResponse {
+  url: string;
 }
 
 export interface RankingEntry {

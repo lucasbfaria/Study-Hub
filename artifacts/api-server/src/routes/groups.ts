@@ -219,6 +219,7 @@ router.get("/groups/:groupId/posts", requireAuth, async (req, res): Promise<void
       subject: postsTable.subject,
       hours: postsTable.hours,
       description: postsTable.description,
+      imageUrl: postsTable.imageUrl,
       createdAt: postsTable.createdAt,
     })
     .from(postsTable)
@@ -234,6 +235,7 @@ router.get("/groups/:groupId/posts", requireAuth, async (req, res): Promise<void
     subject: p.subject,
     hours: p.hours,
     description: p.description ?? null,
+    imageUrl: p.imageUrl ?? null,
     createdAt: p.createdAt,
   }));
 
@@ -272,6 +274,7 @@ router.post("/groups/:groupId/posts", requireAuth, async (req, res): Promise<voi
       subject: body.data.subject,
       hours: body.data.hours,
       description: body.data.description ?? null,
+      imageUrl: body.data.imageUrl ?? null,
     })
     .returning();
 
@@ -305,6 +308,7 @@ router.post("/groups/:groupId/posts", requireAuth, async (req, res): Promise<voi
     subject: post.subject,
     hours: post.hours,
     description: post.description ?? null,
+    imageUrl: post.imageUrl ?? null,
     createdAt: post.createdAt,
   });
 });

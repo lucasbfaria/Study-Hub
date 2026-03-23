@@ -20,5 +20,6 @@ export * from "./post";
 export * from "./rankingEntry";
 export * from "./registerBody";
 export * from "./sendInviteBody";
+export * from "./uploadResponse";
 export * from "./user";
 export * from "./userProfile";

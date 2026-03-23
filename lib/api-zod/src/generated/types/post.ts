@@ -15,5 +15,7 @@ export interface Post {
   hours: number;
   /** @nullable */
   description: string | null;
+  /** @nullable */
+  imageUrl: string | null;
   createdAt: Date;
 }

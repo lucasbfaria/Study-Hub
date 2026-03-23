@@ -571,6 +571,8 @@ components:
           type: number
         description:
           type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
         createdAt:
           type: string
           format: date-time
@@ -582,6 +584,7 @@ components:
         - subject
         - hours
         - description
+        - imageUrl
         - createdAt
 
     CreatePostBody:
@@ -593,9 +596,19 @@ components:
           type: number
         description:
           type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
       required:
         - subject
         - hours
+
+    UploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+      required:
+        - url
 
     RankingEntry:
       type: object
