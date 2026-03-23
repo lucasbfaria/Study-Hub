@@ -1,15 +1,24 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Studify API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: groups
+    description: Study group operations
+  - name: invites
+    description: Invite operations
+  - name: posts
+    description: Study post operations
+  - name: users
+    description: User operations
 paths:
   /healthz:
     get:
@@ -24,6 +33,389 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /groups:
+    get:
+      operationId: listGroups
+      tags: [groups]
+      summary: List groups the current user belongs to
+      responses:
+        "200":
+          description: List of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Group"
+    post:
+      operationId: createGroup
+      tags: [groups]
+      summary: Create a new study group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGroupBody"
+      responses:
+        "201":
+          description: Group created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /groups/{groupId}:
+    get:
+      operationId: getGroup
+      tags: [groups]
+      summary: Get a specific group
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Group details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+        "404":
+          description: Group not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /groups/{groupId}/members:
+    get:
+      operationId: listGroupMembers
+      tags: [groups]
+      summary: List members of a group
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GroupMember"
+
+  /groups/{groupId}/posts:
+    get:
+      operationId: listGroupPosts
+      tags: [groups]
+      summary: List posts (study sessions) in a group
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+    post:
+      operationId: createPost
+      tags: [posts]
+      summary: Create a study post in a group
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePostBody"
+      responses:
+        "201":
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /groups/{groupId}/ranking:
+    get:
+      operationId: getGroupRanking
+      tags: [groups]
+      summary: Get weekly ranking for a group
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Weekly ranking
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RankingEntry"
+
+  /groups/{groupId}/invite:
+    post:
+      operationId: sendInvite
+      tags: [invites]
+      summary: Send an invite to a user by email (admin only)
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendInviteBody"
+      responses:
+        "201":
+          description: Invite sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invite"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /invites:
+    get:
+      operationId: listInvites
+      tags: [invites]
+      summary: List pending invites for the current user
+      responses:
+        "200":
+          description: List of invites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invite"
+
+  /invites/{inviteId}/accept:
+    post:
+      operationId: acceptInvite
+      tags: [invites]
+      summary: Accept a group invite
+      parameters:
+        - name: inviteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Invite accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: Invite not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /invites/{inviteId}/reject:
+    post:
+      operationId: rejectInvite
+      tags: [invites]
+      summary: Reject a group invite
+      parameters:
+        - name: inviteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Invite rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: Invite not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{userId}/profile:
+    get:
+      operationId: getUserProfile
+      tags: [users]
+      summary: Get user profile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +426,260 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    RegisterBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - name
+        - email
+        - password
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        streak:
+          type: integer
+        totalHours:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - streak
+        - totalHours
+        - createdAt
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        message:
+          type: string
+      required:
+        - user
+        - message
+
+    Group:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        adminId:
+          type: integer
+        adminName:
+          type: string
+        memberCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - adminId
+        - adminName
+        - memberCount
+        - createdAt
+
+    GroupMember:
+      type: object
+      properties:
+        userId:
+          type: integer
+        name:
+          type: string
+        streak:
+          type: integer
+        totalHours:
+          type: number
+        isAdmin:
+          type: boolean
+      required:
+        - userId
+        - name
+        - streak
+        - totalHours
+        - isAdmin
+
+    CreateGroupBody:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+        groupId:
+          type: integer
+        userId:
+          type: integer
+        userName:
+          type: string
+        subject:
+          type: string
+        hours:
+          type: number
+        description:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - groupId
+        - userId
+        - userName
+        - subject
+        - hours
+        - description
+        - createdAt
+
+    CreatePostBody:
+      type: object
+      properties:
+        subject:
+          type: string
+        hours:
+          type: number
+        description:
+          type: ["string", "null"]
+      required:
+        - subject
+        - hours
+
+    RankingEntry:
+      type: object
+      properties:
+        userId:
+          type: integer
+        name:
+          type: string
+        weeklyHours:
+          type: number
+        streak:
+          type: integer
+        rank:
+          type: integer
+      required:
+        - userId
+        - name
+        - weeklyHours
+        - streak
+        - rank
+
+    SendInviteBody:
+      type: object
+      properties:
+        email:
+          type: string
+      required:
+        - email
+
+    Invite:
+      type: object
+      properties:
+        id:
+          type: integer
+        groupId:
+          type: integer
+        groupName:
+          type: string
+        invitedById:
+          type: integer
+        invitedByName:
+          type: string
+        invitedUserId:
+          type: integer
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - groupId
+        - groupName
+        - invitedById
+        - invitedByName
+        - invitedUserId
+        - status
+        - createdAt
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        streak:
+          type: integer
+        totalHours:
+          type: number
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/Group"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - streak
+        - totalHours
+        - groups
+        - createdAt

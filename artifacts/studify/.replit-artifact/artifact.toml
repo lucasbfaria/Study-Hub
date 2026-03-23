@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Studify"
+version = "1.0.0"
+id = "artifacts/studify"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23361
+
+[services.development]
+run = "pnpm --filter @workspace/studify run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/studify", "run", "build" ]
+publicDir = "artifacts/studify/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23361"
+BASE_PATH = "/"

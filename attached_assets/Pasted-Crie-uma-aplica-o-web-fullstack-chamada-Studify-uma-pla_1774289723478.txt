@@ -1,0 +1,138 @@
+Crie uma aplicação web fullstack chamada "Studify", uma plataforma de grupos de estudo com foco em consistência e responsabilidade social.
+
+A aplicação deve ser moderna, responsiva e totalmente em português.
+
+## Tecnologias:
+- Frontend: React (ou Next.js)
+- Estilização: Tailwind CSS
+- Backend: Node.js com API simples
+- Banco de dados: pode usar Supabase ou banco interno simples
+
+## Funcionalidades principais (MVP):
+
+### 1. Autenticação
+- Cadastro e login de usuários (nome, email, senha)
+- Sessão persistente
+
+---
+
+### 2. Grupos de estudo (com acesso por convite)
+- Criar grupo (nome do grupo)
+- O criador do grupo é o administrador
+- Listar grupos que o usuário participa
+
+---
+
+### 3. Sistema de convites
+- Apenas o administrador do grupo pode convidar pessoas
+- Enviar convite informando o email do usuário
+- Convite deve ser salvo no sistema (não precisa enviar email real)
+
+#### Tela de convites:
+- Listar convites recebidos pelo usuário
+- Cada convite mostra:
+  - nome do grupo
+  - quem convidou
+
+- Ações:
+  - Aceitar convite → entra no grupo
+  - Recusar convite
+
+#### Regras:
+- Usuário só pode entrar em grupo via convite
+- Não existe entrada livre em grupos
+
+---
+
+### 4. Feed do grupo
+- Exibir posts dos membros do grupo
+- Cada post representa um estudo realizado
+
+Cada post deve mostrar:
+- nome do usuário
+- matéria
+- tempo estudado
+- descrição (opcional)
+- data/hora
+
+---
+
+### 5. Registrar estudo (post)
+Formulário com:
+- matéria (texto)
+- tempo estudado (em horas)
+- descrição (opcional)
+
+Ao enviar:
+- salvar no banco
+- exibir no feed do grupo
+- atualizar ranking
+- atualizar streak do usuário
+
+---
+
+### 6. Ranking
+- Ranking semanal dentro de cada grupo
+- Baseado no total de horas estudadas por usuário
+- Exibir ranking na lateral da tela
+
+---
+
+### 7. Streak (consistência)
+- Cada usuário possui um streak (dias consecutivos estudando)
+- Se o usuário registrar estudo no dia, mantém ou aumenta o streak
+- Se não registrar, perde o streak
+
+---
+
+### 8. Dashboard (tela principal)
+Layout com:
+- Sidebar (esquerda):
+  - lista de grupos
+  - botão "Criar grupo"
+  - botão "Convites"
+
+- Área central:
+  - feed do grupo selecionado
+  - botão "Registrar estudo"
+
+- Lateral direita:
+  - ranking do grupo
+
+---
+
+### 9. Página de perfil
+Mostrar:
+- nome do usuário
+- streak atual
+- total de horas estudadas
+- grupos que participa
+
+---
+
+## Requisitos de UI:
+- Interface moderna estilo dashboard
+- Layout com sidebar + conteúdo principal + painel lateral
+- Cores neutras com destaque em azul ou roxo
+- Design limpo e simples
+
+---
+
+## Requisitos técnicos:
+- Tudo deve ser funcional (sem dados mockados)
+- Dados devem ser persistidos no banco
+- Código organizado e simples
+- Criar dados iniciais para facilitar testes
+
+---
+
+## Extras (se possível):
+- Mensagens de feedback (ex: "Estudo registrado com sucesso")
+- Atualização automática do feed ao criar post
+
+---
+
+## Objetivo:
+Gerar um sistema funcional onde usuários podem criar grupos privados de estudo, convidar pessoas, registrar estudos e acompanhar progresso coletivo com ranking e streak.
+
+O projeto deve estar pronto para rodar e demonstrar.
