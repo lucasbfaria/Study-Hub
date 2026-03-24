@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, groupsTable, groupMembersTable, usersTable, postsTable } from "@workspace/db";
-import { eq, and, sql, gte } from "drizzle-orm";
+import { eq, and, sql, gte, inArray } from "drizzle-orm";
 import { requireAuth } from "../middlewares/session";
 import {
   CreateGroupBody,
@@ -44,7 +44,7 @@ router.get("/groups", requireAuth, async (req, res): Promise<void> => {
     })
     .from(groupsTable)
     .leftJoin(usersTable, eq(groupsTable.adminId, usersTable.id))
-    .where(sql`${groupsTable.id} = ANY(${groupIds})`);
+    .where(inArray(groupsTable.id, groupIds));
 
   const memberCounts = await db
     .select({
@@ -52,7 +52,7 @@ router.get("/groups", requireAuth, async (req, res): Promise<void> => {
       count: sql<number>`count(*)`,
     })
     .from(groupMembersTable)
-    .where(sql`${groupMembersTable.groupId} = ANY(${groupIds})`)
+    .where(inArray(groupMembersTable.groupId, groupIds))
     .groupBy(groupMembersTable.groupId);
 
   const countMap = new Map(memberCounts.map((m) => [m.groupId, Number(m.count)]));
