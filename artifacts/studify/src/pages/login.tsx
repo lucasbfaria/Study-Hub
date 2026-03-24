@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useLogin, useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -11,12 +11,16 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const redirectedRef = useRef(false);
 
-  const { data: me, isLoading } = useGetMe({ query: { retry: false } });
+  const { data: me, isLoading, isFetching } = useGetMe({ query: { retry: false } });
 
   useEffect(() => {
-    if (me) setLocation("/dashboard");
-  }, [me]);
+    if (!isLoading && !isFetching && me && !redirectedRef.current) {
+      redirectedRef.current = true;
+      setLocation("/dashboard");
+    }
+  }, [isLoading, isFetching, me]);
 
   const loginMut = useLogin();
 

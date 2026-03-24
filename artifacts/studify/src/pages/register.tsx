@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useRegister, useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,12 +12,16 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const redirectedRef = useRef(false);
 
-  const { data: me } = useGetMe({ query: { retry: false } });
+  const { data: me, isLoading, isFetching } = useGetMe({ query: { retry: false } });
 
   useEffect(() => {
-    if (me) setLocation("/dashboard");
-  }, [me]);
+    if (!isLoading && !isFetching && me && !redirectedRef.current) {
+      redirectedRef.current = true;
+      setLocation("/dashboard");
+    }
+  }, [isLoading, isFetching, me]);
 
   const registerMut = useRegister();
 
@@ -35,10 +39,12 @@ export default function Register() {
     });
   };
 
+  if (isLoading) return null;
+
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
       <img src={`${import.meta.env.BASE_URL}images/auth-bg.png`} alt="Background" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" />
-      
+
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="w-full max-w-md z-10 px-4 py-12">
         <div className="flex flex-col items-center mb-8">
           <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="Studify" className="h-16 w-16 mb-4 rounded-2xl shadow-xl shadow-primary/20" />
@@ -64,12 +70,18 @@ export default function Register() {
               Registrar
             </Button>
           </form>
-          
+
           <div className="mt-8 text-center text-sm text-muted-foreground">
             Já possui uma conta?{" "}
             <Link href="/login" className="font-semibold text-primary hover:underline">Faça login</Link>
           </div>
         </Card>
+
+        <div className="mt-6 text-center">
+          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            ← Voltar para a página inicial
+          </Link>
+        </div>
       </motion.div>
     </div>
   );

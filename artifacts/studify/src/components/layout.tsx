@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetMe, useListGroups, useLogout, getGetMeQueryKey, getListGroupsQueryKey, useCreateGroup } from "@workspace/api-client-react";
@@ -15,28 +15,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const redirectedRef = useRef(false);
 
-  const { data: me, isLoading: isLoadingMe, isError } = useGetMe({ query: { retry: false } });
+  const { data: me, isLoading: isLoadingMe, isFetching, isError } = useGetMe({ query: { retry: false } });
   const { data: groups } = useListGroups({ query: { enabled: !!me } });
 
   const logoutMut = useLogout();
   const createGroupMut = useCreateGroup();
 
   useEffect(() => {
-    if (!isLoadingMe && (isError || !me)) {
+    if (!isLoadingMe && !isFetching && (isError || !me) && !redirectedRef.current) {
+      redirectedRef.current = true;
       setLocation("/login");
     }
-  }, [isLoadingMe, isError, me]);
+    if (me) {
+      redirectedRef.current = false;
+    }
+  }, [isLoadingMe, isFetching, isError, me]);
 
-  if (isLoadingMe || isError || !me) {
+  if (isLoadingMe || isFetching || isError || !me) {
     return <div className="flex h-screen items-center justify-center"><Spinner /></div>;
   }
 
   const handleLogout = () => {
     logoutMut.mutate(undefined, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
         setLocation("/login");
+        queryClient.setQueryData(getGetMeQueryKey(), undefined);
+        queryClient.removeQueries({ queryKey: getGetMeQueryKey() });
       }
     });
   };
