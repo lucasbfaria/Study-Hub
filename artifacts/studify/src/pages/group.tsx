@@ -218,25 +218,28 @@ export default function GroupPage() {
               <p className="text-center text-muted-foreground mt-10 text-sm">Ninguém pontuou ainda essa semana.</p>
             ) : (
               ranking?.map((entry) => {
-                const isTop3 = entry.rank <= 3;
-                const colors = {
-                  1: "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700",
-                  2: "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600",
-                  3: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800"
+                const medals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+                const accentBorder: Record<number, string> = {
+                  1: "border-l-4 border-l-amber-400",
+                  2: "border-l-4 border-l-slate-400",
+                  3: "border-l-4 border-l-orange-400",
                 };
-                const cardColor = isTop3 ? colors[entry.rank as 1|2|3] : "bg-card";
+                const medal = medals[entry.rank];
+                const accent = accentBorder[entry.rank] ?? "";
 
                 return (
-                  <div key={entry.userId} className={cn("p-4 rounded-xl border flex items-center gap-4 transition-transform hover:scale-[1.02]", cardColor)}>
-                    <div className="font-display font-black text-xl w-6 text-center opacity-70">
-                      {entry.rank}º
+                  <div key={entry.userId} className={cn("p-4 rounded-xl border bg-card flex items-center gap-3 transition-transform hover:scale-[1.02]", accent)}>
+                    <div className="font-display font-black text-xl w-8 text-center flex-shrink-0">
+                      {medal ?? <span className="text-muted-foreground text-base">{entry.rank}º</span>}
                     </div>
-                    <Avatar initials={getInitials(entry.name)} className="w-10 h-10 shadow-none border border-white/20" />
+                    <Avatar initials={getInitials(entry.name)} className="w-10 h-10 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold truncate">{entry.name} {entry.userId === me?.id && "(Você)"}</div>
-                      <div className="text-sm opacity-80 flex items-center gap-2 mt-0.5">
-                        <span className="font-semibold">{entry.weeklyHours}h</span>
-                        <span className="text-[10px]">•</span>
+                      <div className="font-bold text-foreground truncate">
+                        {entry.name}{entry.userId === me?.id && <span className="text-primary font-normal text-xs ml-1">(Você)</span>}
+                      </div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
+                        <span className="font-semibold text-foreground">{entry.weeklyHours}h</span>
+                        <span>•</span>
                         <span>🔥 {entry.streak}</span>
                       </div>
                     </div>
