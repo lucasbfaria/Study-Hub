@@ -2,13 +2,18 @@ import { Router, type IRouter } from "express";
 import multer from "multer";
 import path from "path";
 import crypto from "crypto";
+import fs from "node:fs";
 import { requireAuth } from "../middlewares/session";
 
 const router: IRouter = Router();
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    cb(null, path.resolve(process.cwd(), "uploads"));
+    const uploadsDir = path.resolve(process.cwd(), "uploads");
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    cb(null, uploadsDir);
   },
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();

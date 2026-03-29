@@ -3,11 +3,17 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import path from "path";
+import fs from "node:fs";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { sessionMiddleware } from "./middlewares/session";
 
 const app: Express = express();
+const UPLOADS_DIR = path.resolve(process.cwd(), "uploads");
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
 
 app.use(
   pinoHttp({
@@ -34,7 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(sessionMiddleware);
 
-app.use("/api/uploads", express.static(path.resolve(process.cwd(), "uploads")));
+app.use("/api/uploads", express.static(UPLOADS_DIR));
 app.use("/api", router);
 
 export default app;
