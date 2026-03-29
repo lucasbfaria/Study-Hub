@@ -117,7 +117,8 @@ export default function GroupPage() {
       try {
         setIsUploading(true);
         imageUrl = await uploadImage(postImageFile);
-      } catch {
+      } catch (err) {
+        console.error("Upload error:", err);
         toast.error("Erro ao fazer upload da imagem.");
         setIsUploading(false);
         return;
